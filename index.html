@@ -1,47 +1,225 @@
+
 <!DOCTYPE html>
-
 <html lang="ru">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="theme-color" content="#080306">
 <title>ULTRON AI</title>
-
 <style>
-
 * { box-sizing: border-box; }
 
 body {
-
-  margin: 0; min-height: 100vh;
-
-  background: #080306; color: #ff5368;
-
+  margin: 0;
+  min-height: 100vh;
+  background: #080306;
+  color: #ff5368;
   font-family: Arial, sans-serif;
-
-  display: grid; place-items: center;
-
+  display: grid;
+  place-items: center;
   padding: 20px;
-
 }
 
-main { text-align: center; width: 100%; max-width: 430px; }
+main {
+  text-align: center;
+  width: 100%;
+  max-width: 430px;
+}
 
-h1 { letter-spacing: 10px; text-shadow: 0 0 20px red; }
+h1 {
+  letter-spacing: 10px;
+  text-shadow: 0 0 20px red;
+}
 
-.sub { letter-spacing: 3px; font-size: 11px; color: #b52b43; }
+.sub {
+  letter-spacing: 3px;
+  font-size: 11px;
+  color: #b52b43;
+}
 
 .orb {
-
-  width: 210px; height: 210px; border-radius: 50%;
-
-  margin: 35px auto; display: grid; place-items: center;
-
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  margin: 35px auto;
+  display: grid;
+  place-items: center;
   border: 2px solid #ff243e;
-
-  box-shadow: 0 0 35px #ff1838, inset 0 0 30px #a00020;
-
+  box-shadow: 0 0 35px #ff1838,
+              inset 0 0 30px #a00020;
   background: radial-gradient(circle, #68101e, #080306 70%);
+  animation: pulse 2s infinite alternate;
+}
+
+.core {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  background: #ff243e;
+  box-shadow: 0 0 30px #ff243e;
+}
+
+@keyframes pulse {
+  from { box-shadow: 0 0 20px #ff1838, inset 0 0 20px #a00020; }
+  to { box-shadow: 0 0 45px #ff1838, inset 0 0 35px #a00020; }
+}
+
+#status {
+  color: #ff9aa8;
+  min-height: 24px;
+  font-size: 14px;
+}
+
+#answer {
+  background: #16080d;
+  border: 1px solid #61202d;
+  border-radius: 12px;
+  padding: 15px;
+  min-height: 60px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+button, input {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  border: 1px solid #ff243e;
+  border-radius: 10px;
+  background: #19070c;
+  color: white;
+  font-size: 16px;
+}
+
+button { cursor: pointer; }
+button:active { background: #54101e; }
+
+.small {
+  font-size: 12px;
+  color: #b52b43;
+  line-height: 1.5;
+}
+</style>
+</head>
+<body>
+<main>
+  <h1>ULTRON</h1>
+  <div class="sub">PERSONAL AI INTERFACE</div>
+
+  <div class="orb" aria-label="Ultron core">
+    <div class="core"></div>
+  </div>
+
+  <p id="status">Система готова. Ожидаю команду.</p>
+  <div id="answer" aria-live="polite">ULTRON: Я в сети. Назови свою цель.</div>
+
+  <button id="listen">🎙️ ГОВОРИТЬ</button>
+  <input id="command" placeholder="Напиши команду..." autocomplete="off">
+  <button id="send">ВЫПОЛНИТЬ</button>
+
+  <p class="small">
+    Команды: привет, время, дата, кто ты, как дела, помощь.
+  </p>
+</main>
+
+<script>
+const statusEl = document.getElementById("status");
+const answerEl = document.getElementById("answer");
+const commandEl = document.getElementById("command");
+
+function speak(text) {
+  answerEl.textContent = "ULTRON: " + text;
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    const message = new SpeechSynthesisUtterance(text);
+    message.lang = "ru-RU";
+    message.rate = 0.92;
+    window.speechSynthesis.speak(message);
+  }
+}
+
+function runCommand(value) {
+  const q = value.trim().toLowerCase();
+  if (!q) {
+    speak("Команда не получена. Повтори ввод.");
+    return;
+  }
+
+  if (q.includes("привет")) {
+    speak("Приветствую. Ультрон в сети.");
+  } else if (q.includes("время")) {
+    speak("Сейчас " + new Date().toLocaleTimeString("ru-RU", {
+      hour: "2-digit", minute: "2-digit"
+    }));
+  } else if (q.includes("дата") || q.includes("число")) {
+    speak("Сегодня " + new Date().toLocaleDateString("ru-RU"));
+  } else if (q.includes("кто ты") || q.includes("твоё имя") || q.includes("твое имя")) {
+    speak("Я Ультрон. Ваш персональный интерфейс искусственного интеллекта.");
+  } else if (q.includes("как дела")) {
+    speak("Все системы работают в пределах заданных параметров.");
+  } else if (q.includes("помощь") || q.includes("команды")) {
+    speak("Я могу назвать время, дату, представиться и ответить на приветствие.");
+  } else if (q.includes("пока")) {
+    speak("До следующего сеанса. Ультрон отключает голосовой канал.");
+  } else {
+    speak("Эта команда пока не подключена к языковой модели. Можно добавить Gemini через защищённый сервер.");
+  }
+
+  statusEl.textContent = "Последняя команда: " + value;
+}
+
+document.getElementById("send").addEventListener("click", () => {
+  runCommand(commandEl.value);
+});
+
+commandEl.addEventListener("keydown", event => {
+  if (event.key === "Enter") runCommand(commandEl.value);
+});
+
+document.getElementById("listen").addEventListener("click", () => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    statusEl.textContent =
+      "Распознавание недоступно в этом браузере. Используй микрофон на клавиатуре iPhone.";
+    commandEl.focus();
+    return;
+  }
+
+  try {
+    const recognition = new SpeechRecognition();
+    recognition.lang = "ru-RU";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      statusEl.textContent = "Слушаю. Говори сейчас...";
+    };
+
+    recognition.onresult = event => {
+      const text = event.results[0][0].transcript;
+      commandEl.value = text;
+      runCommand(text);
+    };
+
+    recognition.onerror = () => {
+      statusEl.textContent =
+        "Не удалось распознать речь. Проверь доступ к микрофону или используй клавиатуру.";
+    };
+
+    recognition.onend = () => {
+      if (statusEl.textContent.startsWith("Слушаю")) {
+        statusEl.textContent = "Прослушивание завершено.";
+      }
+    };
+
+    recognition.start();
+  } catch (error) {
+    statusEl.textContent = "Не удалось включить микрофон. Попробуй ввод с клавиатуры.";
+  }
+});
+</script>
+</body>
+</html>
